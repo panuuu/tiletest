@@ -1,0 +1,31 @@
+<%= form_with(model: bill, local: true) do |form| %>
+  <% if bill.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(bill.errors.count, "error") %> prohibited this bill from being saved:</h2>
+
+      <ul>
+        <% bill.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+
+  Bill No   <%= form.text_field :bill_no  %>   <br> <br>
+  Customer <%= form.select(:customer_id, @customers.map { |value| [ value.name, value.id ] }) %>   <br><br>
+  Amount <%= form.text_field :amount  %><br><br>
+  Due date <%= form.text_field :due_date , type:'date'  %><br><br>
+
+
+
+
+
+
+
+
+
+  <div class="actions">
+    <%= form.submit %>
+  </div>
+<% end %>

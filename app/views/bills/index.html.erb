@@ -1,0 +1,195 @@
+
+<style media="screen">
+  .red{color:red}
+  .orange{color:orange}
+</style>
+<div class="container">
+
+  <p id="notice"><%= notice %></p>
+
+  <%= link_to 'New Bill', new_bill_path %> |
+  <%= link_to 'Customer', customers_path %> |
+  <%= link_to 'Invoice', invoices_path %>
+  <br>
+  <br>
+
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" id="pending-tab" data-toggle="tab" href="#pending" role="tab" aria-controls="pending" aria-selected="true">บิล ยังไม่ต้องแจ้งหนี้  (<%= @bills_A.count%>ใบ)</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="active-tab" data-toggle="tab" href="#active" role="tab" aria-controls="active" aria-selected="false">บิล ถึงเวลาแจ้งหนี้ (<%= @bills_B.count%>ใบ)</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="invoiced-tab" data-toggle="tab" href="#invoiced" role="tab" aria-controls="invoiced" aria-selected="false">บิล แจ้งหนี้แล้ว (<%=@invoices.count%>ใบ) </a>
+  </li>
+</ul>
+<div class="tab-content" id="myTabContent">
+    <div class="tab-pane fade show active" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+        <br />
+        <div class="row">
+            <h3>บิล ยังไม่ต้องแจ้งหนี้</h3>
+
+            <%  @dateN = Date.current %>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>เลขที่บิล</th>
+                        <th>ลูกค้า</th>
+                        <th>วันที่ครบชำระ</th>
+                        <th>นับถอยหลัง(วัน)</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                  <% @bills_A.each do |bills| %>
+                    <tr>
+                        <td> <%= bills.bill_no %> </td>
+                        <td> <%= bills.customer.name %> </td>
+                        <td> <%= bills.due_date %> </td>
+                        <td> <%= (bills.due_date - @dateN).to_i   %> </td>
+                        <td>
+                    </tr>
+
+                    <% end %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <div class="tab-pane fade" id="active" role="tabpanel" aria-labelledby="active-tab">
+        <br />
+        <div class="row">
+            <h3>บิล ถึงเวลาแจ้งหนี้</h3>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>เลขที่บิล</th>
+                        <th>ลูกค้า</th>
+                        <th>วันที่ครบชำระ</th>
+                        <th>สถานะ</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                  <% @bills_B.each do |bills|
+                  text = "ถึงเวลาเเจ้งหนี้"
+                  cs = 'orange'
+                  if bills.due_date < @dateN
+                  text = "เลยเวลาเเจ้งหนี้"
+                  cs = 'red'
+                  end
+                  %>
+
+                    <tr>
+                        <td> <%= bills.bill_no %> </td>
+                        <td> <%= bills.customer.name %> </td>
+                        <td class="<%= cs %>"> <%= text  %> </td>
+                        <td>
+                          <button type="button" name="button" data-toggle="modal" data-target="#NewbillModal<%= bills.id %>">View</button>
+                          <div class="modal fade" id="NewbillModal<%= bills.id %>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                          <div class="modal-dialog" role="document">
+                          <div class="modal-content">
+                            <%= form_for :invoice , url: invoices_url do |f|%>
+                            <div class="modal-header">
+                              <h5 class="modal-title" id="exampleModalLabel">สร้างใบเเจ้งหนี้ </h5>
+                              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                              </button>
+                            </div>
+                            <div class="modal-body">
+                              <%= f.hidden_field :bill_id, :value => bills.id %> <br/>
+
+                              Date <%= f.date_field :invoice_date , :value => @dateN , class: 'form-control'%><br>
+                              Amount  <%= f.number_field :amount , :value => bills.amount, class: 'form-control' %><br>
+                              Customer  <%= f.text_field :invoice_user , :value => bills.customer.name ,:placeholder => bills.customer.name , class: 'form-control'%> <br/>
+
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                              <button type="submit" class="btn btn-primary">บันทึก</button>
+                            </div>
+                            <% end %>
+                          </div>
+                          </div>
+                          </div>
+                        </td>
+                    </tr>
+
+                    <% end %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="invoiced" role="tabpanel" aria-labelledby="invoiced-tab">
+      <br />
+      <div class="row">
+          <h3>บิล แจ้งหนี้แล้ว</h3>
+
+          <table class="table">
+              <thead>
+                  <tr>
+                      <th>ลูกค้า</th>
+                      <th>จำนวนเงิน</th>
+                      <th>วันที่</th>
+                  </tr>
+              </thead>
+              <tbody>
+                <tbody>
+                  <% @invoices.each do |invoices| %>
+                    <tr>
+                      <td> <%= invoices.invoice_user %> </td>
+                      <td> <%= invoices.amount %> </td>
+                      <td> <%= invoices.invoice_date %> </td>
+                    </tr>
+                    <% end %>
+                </tbody>
+          </table>
+      </div>
+    </div>
+</div>
+
+<hr />
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- <h1>Bills</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="3"></th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <% @bills_A.each do |bill| %>
+        <tr>
+            <td><%= link_to 'Show', bill %></td>
+            <td><%= link_to 'Edit', edit_bill_path(bill) %></td>
+            <td><%= link_to 'Destroy', bill, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+        </tr>
+        <% end %>
+    </tbody>
+</table>
+
+<br />
+<%= link_to 'New Bill', new_bill_path %>
+
+-->
+
+</div>
